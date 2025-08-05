@@ -1,0 +1,84 @@
+const player = document.getElementById("player");
+const obstacle = document.getElementById("obstacle");
+const gameOverText = document.getElementById("game-over");
+const scoreDisplay = document.getElementById("score");
+
+let isJumping = false;
+let score = 0;
+let gameInterval;
+let scoreInterval;
+
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space" && !isJumping) {
+    jump();
+  }
+});
+
+function jump() {
+  isJumping = true;
+  let position = 0;
+  let upInterval = setInterval(() => {
+    if (position >= 150) {
+      clearInterval(upInterval);
+      let downInterval = setInterval(() => {
+        if (position <= 0) {
+          clearInterval(downInterval);
+          isJumping = false;
+        } else {
+          position -= 5;
+          player.style.bottom = 50 + position + "px";
+        }
+      }, 10);
+    } else {
+      position += 5;
+      player.style.bottom = 50 + position + "px";
+    }
+  }, 10);
+}
+
+function startGame() {
+  obstacle.style.right = "-60px";
+  score = 0;
+  scoreDisplay.innerText = "Score: 0";
+  gameOverText.style.display = "none";
+
+  gameInterval = setInterval(() => {
+    let obstacleRight = parseInt(window.getComputedStyle(obstacle).getPropertyValue("right"));
+    if (obstacleRight > window.innerWidth + 60) {
+      obstacle.style.right = "-60px";
+    } else {
+      obstacle.style.right = obstacleRight + 10 + "px";
+    }
+
+    let playerRect = player.getBoundingClientRect();
+    let obstacleRect = obstacle.getBoundingClientRect();
+
+    if (
+      playerRect.right > obstacleRect.left &&
+      playerRect.left < obstacleRect.right &&
+      playerRect.bottom > obstacleRect.top &&
+      playerRect.top < obstacleRect.bottom
+    ) {
+      endGame();
+    }
+  }, 30);
+
+  scoreInterval = setInterval(() => {
+    score++;
+    scoreDisplay.innerText = "Score: " + score;
+  }, 200);
+}
+
+function endGame() {
+  clearInterval(gameInterval);
+  clearInterval(scoreInterval);
+  gameOverText.style.display = "block";
+}
+
+function restartGame() {
+  obstacle.style.right = "-60px";
+  player.style.bottom = "50px";
+  startGame();
+}
+
+startGame();
